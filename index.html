@@ -65,8 +65,6 @@
             height: 128px;
             margin: 0 auto 25px;
             border-radius: 50%;
-            /* Пример градиентной рамки вместо обрезки фона — так как мы не можем обработать картинку, 
-               рамка скроет возможный белый фон на углах, но лучше использовать картинку с прозрачностью */
             padding: 3px;
             background: linear-gradient(45deg, #a855f7, #6366f1, #a855f7);
             box-shadow: 0 0 30px rgba(168, 85, 247, 0.4);
@@ -78,8 +76,7 @@
             border-radius: 50%;
             object-fit: cover;
             display: block;
-            background-color: #0a0a0a; /* Заглушка */
-            /* Если картинка с белым фоном, поможет свойство mix-blend-mode в некоторых случаях, но лучше прозрачный PNG */
+            background-color: #0a0a0a;
         }
 
         /* Анимированное окно с кнопками */
@@ -127,7 +124,7 @@
             font-size: 22px;
         }
 
-        /* Кнопка "Подача заявки" (Email) */
+        /* Кнопка "Подача заявки" */
         .btn-apply {
             background: linear-gradient(135deg, #a855f7, #7c3aed);
             color: white;
@@ -199,7 +196,7 @@
             border: 1px solid rgba(168, 85, 247, 0.5);
             border-radius: 24px;
             width: 90%;
-            max-width: 420px;
+            max-width: 450px;
             padding: 30px 20px;
             color: white;
             box-shadow: 0 25px 50px rgba(0,0,0,0.8);
@@ -320,6 +317,74 @@
             background: rgba(255, 255, 255, 0.2);
         }
 
+        /* Стили для уведомления */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(15, 10, 25, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(168, 85, 247, 0.5);
+            border-radius: 16px;
+            padding: 20px 25px;
+            color: white;
+            z-index: 200;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8);
+            transform: translateX(400px);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            max-width: 380px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            font-weight: bold;
+            font-size: 18px;
+            color: #c084fc;
+        }
+
+        .notification-header i {
+            font-size: 24px;
+        }
+
+        .notification-body {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #d1d5db;
+        }
+
+        .notification-body a {
+            color: #5865F2;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .notification-body a:hover {
+            text-decoration: underline;
+        }
+
+        .notification-close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 20px;
+            transition: color 0.3s;
+        }
+
+        .notification-close:hover {
+            color: white;
+        }
+
         /* Адаптивность */
         @media (max-width: 400px) {
             .avatar-wrapper {
@@ -330,17 +395,39 @@
                 font-size: 16px;
                 padding: 14px 20px;
             }
+            .notification {
+                left: 10px;
+                right: 10px;
+                max-width: none;
+            }
         }
     </style>
 </head>
 <body>
 
-<!-- Фоновые частицы (просто декорация) -->
+<!-- Фоновые частицы -->
 <div class="particles" id="particles"></div>
+
+<!-- УВЕДОМЛЕНИЕ ОБ УСПЕШНОЙ ОТПРАВКЕ -->
+<div class="notification" id="notification">
+    <button class="notification-close" id="notificationClose">&times;</button>
+    <div class="notification-header">
+        <i class="fas fa-check-circle"></i> Заявка отправлена!
+    </div>
+    <div class="notification-body">
+        <p>✅ Ваша заявка успешно отправлена и будет рассмотрена в ближайшее время.</p>
+        <p style="margin-top: 8px;">📢 <strong>Ожидайте результатов в нашем Discord-сервере:</strong></p>
+        <p style="margin-top: 5px;">
+            <a href="https://discord.gg/wVWm3uq9NV" target="_blank">
+                <i class="fab fa-discord"></i> discord.gg/wVWm3uq9NV
+            </a>
+        </p>
+    </div>
+</div>
 
 <!-- Главный контейнер -->
 <div class="container">
-    <!-- АВАТАРКА: Замени src на ссылку своей картинки с прозрачным фоном -->
+    <!-- АВАТАРКА -->
     <div class="avatar-wrapper">
         <img src="https://placehold.co/400x400/2d1b4e/a855f7?text=SMP" alt="Project SMP Avatar" class="avatar">
     </div>
@@ -348,11 +435,11 @@
     <!-- АНИМИРОВАННОЕ ОКНО С КНОПКАМИ -->
     <div class="action-window">
         <div class="buttons">
-            <!-- Кнопка Заявки (открывает модальное окно) -->
+            <!-- Кнопка Заявки -->
             <a href="#" class="btn btn-apply" id="openModalBtn">
                 <i class="fas fa-envelope"></i> Подача заявки
             </a>
-            <!-- Кнопка Дискорд (прямая ссылка) -->
+            <!-- Кнопка Дискорд -->
             <a href="https://discord.gg/wVWm3uq9NV" target="_blank" class="btn btn-discord">
                 <i class="fab fa-discord"></i> Discord сервер
             </a>
@@ -370,35 +457,43 @@
     <div class="modal">
         <h2><i class="fas fa-feather-alt"></i> Заявка на сервер</h2>
         
-        <!-- ВАЖНО: action ведёт на Formspree. Замени xqknddop на свой ID! -->
         <form id="applicationForm" action="https://formspree.io/f/xqevyjbo" method="POST">
+            <!-- Ник в Minecraft -->
             <div class="form-group">
-                <label><i class="fas fa-user"></i> Ваш ник</label>
-                <input type="text" name="username" placeholder="Введите игровой ник" required>
+                <label><i class="fas fa-gamepad"></i> Ваш ник в Minecraft</label>
+                <input type="text" name="minecraft_nick" placeholder="Введите игровой ник" required>
             </div>
             
+            <!-- Ник в Discord (НОВОЕ ПОЛЕ) -->
+            <div class="form-group">
+                <label><i class="fab fa-discord"></i> Ваш ник в Discord</label>
+                <input type="text" name="discord_nick" placeholder="Например: User#1234" required>
+            </div>
+            
+            <!-- Возраст -->
             <div class="form-group">
                 <label><i class="fas fa-calendar-alt"></i> Возраст (лет)</label>
                 <input type="number" name="age" placeholder="Сколько вам лет?" min="10" max="99" required>
             </div>
             
+            <!-- Откуда узнал -->
             <div class="form-group">
                 <label><i class="fas fa-search"></i> Откуда вы узнали о сервере?</label>
                 <input type="text" name="source" placeholder="YouTube, друзья, мониторинг..." required>
             </div>
             
+            <!-- Планы на сервере -->
             <div class="form-group">
                 <label><i class="fas fa-hammer"></i> Что вы собираетесь делать на сервере?</label>
                 <textarea name="plans" placeholder="Опишите ваши планы: строительство, торговля, PvP..."></textarea>
             </div>
             
-            <!-- ГАЛОЧКА ПИАРА -->
+            <!-- Галочка пиара -->
             <div class="checkbox-group">
                 <input type="checkbox" id="prHelp" name="pr_help" value="Да">
                 <label for="prHelp"><i class="fas fa-bullhorn"></i> Я помогу с пиаром сервера</label>
             </div>
             
-            <!-- Скрытое поле для темы письма (удобно для сортировки) -->
             <input type="hidden" name="_subject" value="Новая заявка с сайта Project SMP!">
             
             <div class="modal-buttons">
@@ -414,7 +509,7 @@
 </div>
 
 <script>
-    // Плавное создание частиц
+    // Создание частиц
     const particlesContainer = document.getElementById('particles');
     for (let i = 0; i < 20; i++) {
         const particle = document.createElement('div');
@@ -429,23 +524,28 @@
         particlesContainer.appendChild(particle);
     }
 
-    // Логика открытия/закрытия модального окна
+    // DOM-элементы
     const modalOverlay = document.getElementById('modalOverlay');
     const openBtn = document.getElementById('openModalBtn');
     const closeBtn = document.getElementById('closeModalBtn');
     const form = document.getElementById('applicationForm');
+    const notification = document.getElementById('notification');
+    const notificationClose = document.getElementById('notificationClose');
 
+    // Открыть модальное окно
     openBtn.addEventListener('click', (e) => {
         e.preventDefault();
         modalOverlay.classList.add('active');
-        document.body.style.overflow = 'hidden'; // запрет скролла фона
+        document.body.style.overflow = 'hidden';
     });
 
+    // Закрыть модальное окно
     closeBtn.addEventListener('click', () => {
         modalOverlay.classList.remove('active');
         document.body.style.overflow = '';
     });
 
+    // Закрыть по клику на оверлей
     modalOverlay.addEventListener('click', (e) => {
         if (e.target === modalOverlay) {
             modalOverlay.classList.remove('active');
@@ -453,13 +553,31 @@
         }
     });
 
-    // Обработка отправки формы (без перезагрузки, с уведомлением)
+    // Закрыть уведомление
+    notificationClose.addEventListener('click', () => {
+        notification.classList.remove('show');
+    });
+
+    // Автоматически скрыть уведомление через 15 секунд
+    function showNotification() {
+        notification.classList.add('show');
+        setTimeout(() => {
+            notification.classList.remove('show');
+        }, 15000);
+    }
+
+    // Отправка формы
     form.addEventListener('submit', function(e) {
-        e.preventDefault(); // Остановим стандартную отправку, чтобы показать сообщение
+        e.preventDefault();
         
         const formData = new FormData(form);
+        const submitBtn = form.querySelector('.btn-submit');
         
-        // Отправка на Formspree
+        // Меняем текст кнопки на время отправки
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Отправка...';
+        submitBtn.disabled = true;
+        
         fetch(form.action, {
             method: 'POST',
             body: formData,
@@ -468,16 +586,33 @@
             }
         }).then(response => {
             if (response.ok) {
-                alert('✅ Заявка успешно отправлена! Мы свяжемся с вами.');
+                // Показываем кастомное уведомление вместо alert
+                showNotification();
+                
+                // Очищаем форму
                 form.reset();
+                
+                // Закрываем модальное окно
                 modalOverlay.classList.remove('active');
                 document.body.style.overflow = '';
             } else {
-                alert('❌ Ошибка отправки. Попробуйте позже или напишите нам в Discord.');
+                alert('❌ Ошибка отправки. Попробуйте позже или напишите нам в Discord: https://discord.gg/wVWm3uq9NV');
             }
         }).catch(() => {
-            alert('❌ Ошибка сети. Проверьте подключение.');
+            alert('❌ Ошибка сети. Проверьте подключение к интернету.');
+        }).finally(() => {
+            // Возвращаем кнопку в исходное состояние
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
         });
+    });
+
+    // Закрытие модального окна по клавише Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+            modalOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
     });
 </script>
 </body>
